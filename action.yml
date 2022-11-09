@@ -1,0 +1,52 @@
+name: 'Go build and push to ECR actions'
+description: 'Go build and push to ECR actions'
+inputs:
+  service:  
+    description: 'Service Name'
+    required: true
+  gh-user:
+    description: 'GitHub User'
+    required: true
+  gh-token:
+    description: 'GitHub Toke'
+    required: true
+  aws-access-key-id:
+    required: true
+  aws-secret-access-key:
+    required: true
+  aws-region:
+    required: true
+  go-private:
+    required: false
+  repo-prefix:
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.18.8'
+    - run: go version
+    - run: git config --global url.https://${{ inputs.gh-user }}:${{ inputs.gh-token }}@github.com/.insteadOf https://github.com/
+    - name: Build
+      run: |
+        echo "Service: $SERVICE"
+        echo "Build $SERVICE starting!"
+        go env -w GOPRIVATE="${{ input.go-private }}"
+        GOOS=linux GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE ./cmd/$SERVICE/main.go &&  echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})" > ./bin/$SERVICE.commit; \
+        GOOS=linux GOARCH=amd64  GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE-worker ./cmd/worker/main.go && echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})"> ./$SERVICE-worker.commit;  \
+        echo "Build $SERVICE completed!"
+      shell: bash
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region:  ${{ inputs.aws-region }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
