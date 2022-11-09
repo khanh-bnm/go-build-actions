@@ -30,7 +30,9 @@ runs:
       with:
         go-version: '1.18.8'
     - run: go version
+      shell: bash
     - run: git config --global url.https://${{ inputs.gh-user }}:${{ inputs.gh-token }}@github.com/.insteadOf https://github.com/
+      shell: bash
     - name: Build
       run: |
         echo "Service: $SERVICE"
