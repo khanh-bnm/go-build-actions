@@ -8,7 +8,7 @@ inputs:
     description: 'GitHub User'
     required: true
   gh-token:
-    description: 'GitHub Toke'
+    description: 'GitHub Token'
     required: true
   aws-access-key-id:
     required: true
@@ -17,9 +17,9 @@ inputs:
   aws-region:
     required: true
   go-private:
-    required: false
-  repo-prefix:
-    required: false
+    required: true
+  ecr-repository:
+    required: true
 runs:
   using: "composite"
   steps:
@@ -50,3 +50,21 @@ runs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+     - name: Get image tag(verion)
+        id: image
+        run: |
+          VERSION=$(echo ${{ github.sha }} | cut -c1-8)
+          echo VERSION=$VERSION
+          echo "::set-output name=version::$VERSION"
+        shell: bash
+    - name: Build, tag, and push image to Amazon ECR
+      id: image-info
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+        IMAGE_TAG: ${{ steps.image.outputs.version }}
+      run: |
+        echo "::set-output name=ecr_repository::$ECR_REPOSITORY"
+        echo "::set-output name=image_tag::$IMAGE_TAG"
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
