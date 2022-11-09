@@ -37,7 +37,7 @@ runs:
     - run: go version
       shell: bash
     - name: Build
-      run: ./build.sh ${{ inputs.service }}
+      run: build.sh ${{ inputs.service }}
       shell: bash
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
