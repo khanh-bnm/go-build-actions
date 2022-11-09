@@ -20,5 +20,5 @@ echo "${LDFLAGS}"
 
 echo "Build"
 GOOS=linux GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE ./cmd/$SERVICE/main.go &&  echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})" > ./bin/$SERVICE.commit
-GOOS=linux GOARCH=amd64  GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE-worker ./cmd/worker/main.go && echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})"> ./$SERVICE-worker.commit
-echo "Build $service service completed!"
+GOOS=linux GOARCH=amd64  GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE-worker ./cmd/worker/main.go && echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})"> ./bin/$SERVICE-worker.commit
+echo "Build $SERVICE service completed!"

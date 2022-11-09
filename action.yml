@@ -29,18 +29,15 @@ runs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.18.8'
+    - name: Go Config
+      run: |
+        git config --global url.https://${{ inputs.gh-user }}:${{ inputs.gh-token }}@github.com/.insteadOf https://github.com/
+        echo "GOPRIVATE=${{ inputs.go-private }}" >> $GITHUB_ENV
+      shell: bash
     - run: go version
       shell: bash
-    - run: git config --global url.https://${{ inputs.gh-user }}:${{ inputs.gh-token }}@github.com/.insteadOf https://github.com/
-      shell: bash
     - name: Build
-      run: |
-        echo "Service: $SERVICE"
-        echo "Build $SERVICE starting!"
-        go env -w GOPRIVATE="${{ inputs.go-private }}"
-        GOOS=linux GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE ./cmd/$SERVICE/main.go &&  echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})" > ./bin/$SERVICE.commit; \
-        GOOS=linux GOARCH=amd64  GO111MODULE=on CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o ./bin/$SERVICE-worker ./cmd/worker/main.go && echo -n "${COMMIT_HASH_SHORT} (${GIT_TAG})"> ./$SERVICE-worker.commit;  \
-        echo "Build $SERVICE completed!"
+      run: ./build.sh ${{ inputs.service }}
       shell: bash
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -48,7 +45,6 @@ runs:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region:  ${{ inputs.aws-region }}
-
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
