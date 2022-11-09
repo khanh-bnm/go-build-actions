@@ -50,13 +50,13 @@ runs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-     - name: Get image tag(verion)
-        id: image
-        run: |
-          VERSION=$(echo ${{ github.sha }} | cut -c1-8)
-          echo VERSION=$VERSION
-          echo "::set-output name=version::$VERSION"
-        shell: bash
+    - name: Get image tag(verion)
+      id: image
+      run: |
+        VERSION=$(echo ${{ github.sha }} | cut -c1-8)
+        echo VERSION=$VERSION
+        echo "::set-output name=version::$VERSION"
+      shell: bash
     - name: Build, tag, and push image to Amazon ECR
       id: image-info
       env:
@@ -68,3 +68,4 @@ runs:
         echo "::set-output name=image_tag::$IMAGE_TAG"
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      shell: bash
